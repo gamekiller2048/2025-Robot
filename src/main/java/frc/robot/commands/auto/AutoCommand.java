@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.AutoConstants.AutoPattern;
 import frc.robot.OperatorInput;
 import frc.robot.commands.drive.DriveOnHeadingCommand;
+import frc.robot.commands.drive.DriveToTargetCommand;
 import frc.robot.subsystems.DriveSubsystem;
-
 
 public class AutoCommand extends SequentialCommandGroup {
 
@@ -59,14 +59,18 @@ public class AutoCommand extends SequentialCommandGroup {
             return;
 
         case DRIVE_FORWARD:
-
-            // Set the current heading to zero, the gyro could have drifted while
-            // waiting for auto to start.
-            driveSubsystem.setGyroHeading(0);
-
-            // Drive forward 1m at .2 speed
-            addCommands(new DriveOnHeadingCommand(0, .2, 100, driveSubsystem));
+            // changing this to this for now
+            addCommands(new DriveOnHeadingCommand(Math.toDegrees(Math.atan2(-100, -50)), 0, 0, driveSubsystem));
+            addCommands(new DriveToTargetCommand(100, -50, driveSubsystem));
             return;
+
+        // Set the current heading to zero, the gyro could have drifted while
+        // waiting for auto to start.
+        // driveSubsystem.setGyroHeading(0);
+
+        // // Drive forward 1m at .2 speed
+        // addCommands(new DriveOnHeadingCommand(0, .2, 100, driveSubsystem));
+        // return;
 
         case BOX:
 

@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Robot;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -135,10 +136,6 @@ public class DriveSubsystem extends SubsystemBase {
         config.follow(rightPrimaryMotor);
         rightFollowerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-
-        odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(navXGyro.getAngle()),
-            getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT, getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT);
-
         resetEncoders();
 
         // Reset the Gyro Heading
@@ -151,21 +148,27 @@ public class DriveSubsystem extends SubsystemBase {
             SmartDashboard.putData("Field", field);
 
             drivetrainSim = DifferentialDrivetrainSim.createKitbotSim(
-                KitbotMotor.kDoubleNEOPerSide, // Double
-                                               // NEO
-                                               // per
-                                               // side
-                KitbotGearing.k10p71, // 10.71:1
-                KitbotWheelSize.kSixInch, // 6"
-                                          // diameter
-                                          // wheels.
-                null // No
-                     // measurement
-                     // noise.
+                KitbotMotor.kDoubleNEOPerSide,                                                                               // Double
+                // NEO
+                // per
+                // side
+                KitbotGearing.k10p71,                                                                                        // 10.71:1
+                KitbotWheelSize.kSixInch,                                                                                    // 6"
+                // diameter
+                // wheels.
+                null                                                                                                         // No
+            // measurement
+            // noise.
             );
+
+            odometry      = new DifferentialDriveOdometry(Rotation2d.fromDegrees(simAngle), simLeftEncoder, simRightEncoder);
         }
         else {
             navXGyro = new NavXGyro();
+
+            odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(navXGyro.getAngle()), getLeftEncoderDistanceCm(),
+                getRightEncoderDistanceCm());
+
         }
     }
 
@@ -321,6 +324,16 @@ public class DriveSubsystem extends SubsystemBase {
         return getAverageEncoderValue() * DriveConstants.CM_PER_ENCODER_COUNT;
     }
 
+    public double getLeftEncoderDistanceCm() {
+
+        return getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT;
+    }
+
+    public double getRightEncoderDistanceCm() {
+
+        return getRightEncoder() * DriveConstants.CM_PER_ENCODER_COUNT;
+    }
+
     /**
      * Gets the left drive encoder.
      *
@@ -410,9 +423,19 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Gyro Heading", getHeading());
         SmartDashboard.putNumber("Gyro Pitch", getPitch());
 
-        odometry.update(Rotation2d.fromDegrees(navXGyro.getAngle()), getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT,
-            getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT);
+        // update the pose both real and sim
+        if (Robot.isSimulation()) {
+            odometry.update(Rotation2d.fromDegrees(simAngle), simLeftEncoder, simRightEncoder);
+        }
+        else {
+            odometry.update(Rotation2d.fromDegrees(navXGyro.getAngle()), getLeftEncoderDistanceCm(),
+                getRightEncoderDistanceCm());
+        }
 
+        Pose2d pose = getPose();
+        SmartDashboard.putNumber("PoseX", pose.getX());
+        SmartDashboard.putNumber("PoseY", pose.getY());
+        SmartDashboard.putNumber("PoseRot", pose.getRotation().getDegrees());
     }
 
     @Override

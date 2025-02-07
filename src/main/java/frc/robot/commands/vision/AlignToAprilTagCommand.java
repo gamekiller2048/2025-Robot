@@ -11,7 +11,7 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 
 
-public class AlignToAprilTag extends LoggingCommand {
+public class AlignToAprilTagCommand extends LoggingCommand {
 
     // the target id of the apriltag
     private final int             targetID;
@@ -29,7 +29,7 @@ public class AlignToAprilTag extends LoggingCommand {
      * @param driveSubsystem
      */
 
-    public AlignToAprilTag(int targetID, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
+    public AlignToAprilTagCommand(int targetID, DriveSubsystem driveSubsystem, VisionSubsystem visionSubsystem) {
 
         this.targetID        = targetID;
         this.visionSubsystem = visionSubsystem;
