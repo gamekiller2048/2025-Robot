@@ -9,6 +9,9 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.studica.frc.AHRS;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
@@ -56,44 +59,52 @@ public class DriveSubsystem extends SubsystemBase {
         }
     }
 
-    private final LightsSubsystem     lightsSubsystem;
+    private final LightsSubsystem           lightsSubsystem;
 
     // The motors on the left side of the drive.
-    private final SparkMax            leftPrimaryMotor   = new SparkMax(DriveConstants.LEFT_MOTOR_CAN_ID, MotorType.kBrushless);
-    private final SparkMax            leftFollowerMotor  = new SparkMax(DriveConstants.LEFT_MOTOR_CAN_ID + 1,
+    private final SparkMax                  leftPrimaryMotor   = new SparkMax(DriveConstants.LEFT_MOTOR_CAN_ID,
+        MotorType.kBrushless);
+    private final SparkMax                  leftFollowerMotor  = new SparkMax(DriveConstants.LEFT_MOTOR_CAN_ID + 1,
         MotorType.kBrushless);
 
     // The motors on the right side of the drive.
-    private final SparkMax            rightPrimaryMotor  = new SparkMax(DriveConstants.RIGHT_MOTOR_CAN_ID, MotorType.kBrushless);
-    private final SparkMax            rightFollowerMotor = new SparkMax(DriveConstants.RIGHT_MOTOR_CAN_ID + 1,
+    private final SparkMax                  rightPrimaryMotor  = new SparkMax(DriveConstants.RIGHT_MOTOR_CAN_ID,
+        MotorType.kBrushless);
+    private final SparkMax                  rightFollowerMotor = new SparkMax(DriveConstants.RIGHT_MOTOR_CAN_ID + 1,
         MotorType.kBrushless);
 
-    private double                    leftSpeed          = 0;
-    private double                    rightSpeed         = 0;
+    private double                          leftSpeed          = 0;
+    private double                          rightSpeed         = 0;
 
     // Encoders
-    private final RelativeEncoder     leftEncoder        = leftPrimaryMotor.getEncoder();
-    private final RelativeEncoder     rightEncoder       = rightPrimaryMotor.getEncoder();
+    private final RelativeEncoder           leftEncoder        = leftPrimaryMotor.getEncoder();
+    private final RelativeEncoder           rightEncoder       = rightPrimaryMotor.getEncoder();
 
-    private double                    leftEncoderOffset  = 0;
-    private double                    rightEncoderOffset = 0;
+    private double                          leftEncoderOffset  = 0;
+    private double                          rightEncoderOffset = 0;
 
     /*
      * Gyro
      */
-    private NavXGyro                  navXGyro           = null;
+    private NavXGyro                        navXGyro           = null;
 
-    private double                    gyroHeadingOffset  = 0;
-    private double                    gyroPitchOffset    = 0;
+    private double                          gyroHeadingOffset  = 0;
+    private double                          gyroPitchOffset    = 0;
+
+    /*
+     * Odometry
+     */
+    private final DifferentialDriveOdometry odometry;
+
 
     /*
      * Simulation fields
      */
-    private Field2d                   field              = null;
-    private DifferentialDrivetrainSim drivetrainSim      = null;
-    private double                    simAngle           = 0;
-    private double                    simLeftEncoder     = 0;
-    private double                    simRightEncoder    = 0;
+    private Field2d                         field              = null;
+    private DifferentialDrivetrainSim       drivetrainSim      = null;
+    private double                          simAngle           = 0;
+    private double                          simLeftEncoder     = 0;
+    private double                          simRightEncoder    = 0;
 
     /** Creates a new DriveSubsystem. */
     public DriveSubsystem(LightsSubsystem lightsSubsystem) {
@@ -124,6 +135,10 @@ public class DriveSubsystem extends SubsystemBase {
         config.follow(rightPrimaryMotor);
         rightFollowerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
+
+        odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(navXGyro.getAngle()),
+            getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT, getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT);
+
         resetEncoders();
 
         // Reset the Gyro Heading
@@ -136,10 +151,17 @@ public class DriveSubsystem extends SubsystemBase {
             SmartDashboard.putData("Field", field);
 
             drivetrainSim = DifferentialDrivetrainSim.createKitbotSim(
-                KitbotMotor.kDoubleNEOPerSide, // Double NEO per side
+                KitbotMotor.kDoubleNEOPerSide, // Double
+                                               // NEO
+                                               // per
+                                               // side
                 KitbotGearing.k10p71, // 10.71:1
-                KitbotWheelSize.kSixInch, // 6" diameter wheels.
-                null // No measurement noise.
+                KitbotWheelSize.kSixInch, // 6"
+                                          // diameter
+                                          // wheels.
+                null // No
+                     // measurement
+                     // noise.
             );
         }
         else {
@@ -277,6 +299,15 @@ public class DriveSubsystem extends SubsystemBase {
     }
 
     /**
+     * Gets the estimated pose based on odometry in meters
+     * 
+     * @return the estimated pose based on odometry in meters
+     */
+    public Pose2d getPose() {
+        return odometry.getPoseMeters();
+    }
+
+    /**
      * Gets the average distance of the two encoders.
      *
      * @return the average of the two encoder readings
@@ -378,6 +409,9 @@ public class DriveSubsystem extends SubsystemBase {
         }
         SmartDashboard.putNumber("Gyro Heading", getHeading());
         SmartDashboard.putNumber("Gyro Pitch", getPitch());
+
+        odometry.update(Rotation2d.fromDegrees(navXGyro.getAngle()), getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT,
+            getLeftEncoder() * DriveConstants.CM_PER_ENCODER_COUNT);
 
     }
 
