@@ -61,4 +61,8 @@ public final class Constants {
         public static final int LED_STRING_PWM_PORT = 0;
         public static final int LED_STRING_LENGTH   = 60;
     }
+
+    public static final class VisionConstants {
+        public static final double ALIGN_TX_MINIMUM_THRESHOLD = 0.1;
+    }
 }

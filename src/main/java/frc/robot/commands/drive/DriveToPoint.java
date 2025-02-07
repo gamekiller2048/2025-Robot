@@ -10,9 +10,8 @@ public class DriveToPoint extends LoggingCommand {
     private final DriveSubsystem driveSubsystem;
 
     private final Pose2d         target;
-    private final PIDController  xController     = new PIDController(1.0, 0, 0);
-    private final PIDController  yController     = new PIDController(1.0, 0, 0);
-    private final PIDController  thetaController = new PIDController(1.0, 0, 0);
+    private final PIDController  xController       = new PIDController(1.0, 0, 0);
+    private final PIDController  headingController = new PIDController(1.0, 0, 0);
 
     public DriveToPoint(DriveSubsystem driveSubsystem, Pose2d target) {
         this.driveSubsystem = driveSubsystem;
@@ -26,11 +25,10 @@ public class DriveToPoint extends LoggingCommand {
         Pose2d currentPose = driveSubsystem.getPose();
 
         double xError      = target.getX() - currentPose.getX();
-        double yError      = target.getY() - currentPose.getY();
         double angleError  = target.getRotation().getDegrees() - currentPose.getRotation().getDegrees();
 
         double speed       = xController.calculate(xError);
-        double rotation    = thetaController.calculate(angleError);
+        double rotation    = headingController.calculate(angleError);
 
         setArcadeDriveMotorSpeeds(speed, rotation, DriveConstants.DRIVE_SCALING_NORMAL);
     }
