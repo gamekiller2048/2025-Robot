@@ -38,10 +38,11 @@ public class OperatorInput extends SubsystemBase {
             OperatorInputConstants.DRIVER_CONTROLLER_DEADBAND);
 
         // Initialize the dashboard selectors
-        autoPatternChooser.setDefaultOption("Do Nothing", AutoPattern.DO_NOTHING);
+        autoPatternChooser.setDefaultOption("Path Testing", AutoPattern.PATH_TESTING);
         SmartDashboard.putData("Auto Pattern", autoPatternChooser);
         autoPatternChooser.addOption("Drive Forward", AutoPattern.DRIVE_FORWARD);
         autoPatternChooser.addOption("Box", AutoPattern.BOX);
+        autoPatternChooser.addOption("Do Nothing", AutoPattern.DO_NOTHING);
 
         waitTimeChooser.setDefaultOption("No wait", 0);
         SmartDashboard.putData("Auto Wait Time", waitTimeChooser);

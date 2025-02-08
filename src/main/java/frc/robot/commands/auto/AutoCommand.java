@@ -9,6 +9,7 @@ import frc.robot.Constants.AutoConstants.AutoPattern;
 import frc.robot.OperatorInput;
 import frc.robot.commands.drive.DriveOnHeadingCommand;
 import frc.robot.commands.drive.DriveToTargetCommand;
+import frc.robot.commands.drive.RotateToTargetCommand;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class AutoCommand extends SequentialCommandGroup {
@@ -59,18 +60,26 @@ public class AutoCommand extends SequentialCommandGroup {
             return;
 
         case DRIVE_FORWARD:
-            // changing this to this for now
-            addCommands(new DriveOnHeadingCommand(Math.toDegrees(Math.atan2(-100, -50)), 0, 0, driveSubsystem));
-            addCommands(new DriveToTargetCommand(100, -50, driveSubsystem));
+            // Set the current heading to zero, the gyro could have drifted while
+            // waiting for auto to start.
+            driveSubsystem.setGyroHeading(0);
+
+            // Drive forward 1m at .2 speed
+            addCommands(new DriveOnHeadingCommand(0, .2, 100, driveSubsystem));
             return;
 
-        // Set the current heading to zero, the gyro could have drifted while
-        // waiting for auto to start.
-        // driveSubsystem.setGyroHeading(0);
+        case PATH_TESTING:
+            double targets[][] = { { 100, -50 }, { 0, 0 }, { 100, -100 } };
 
-        // // Drive forward 1m at .2 speed
-        // addCommands(new DriveOnHeadingCommand(0, .2, 100, driveSubsystem));
-        // return;
+
+            // addCommands(new DriveOnHeadingCommand(Math.toDegrees(Math.atan2(50, 100)), 0, 0, driveSubsystem));
+
+            for (double[] target : targets) {
+                addCommands(new RotateToTargetCommand(target[0], target[1], driveSubsystem));
+                addCommands(new DriveToTargetCommand(target[0], target[1], driveSubsystem));
+            }
+
+            return;
 
         case BOX:
 

@@ -7,39 +7,40 @@ import frc.robot.commands.LoggingCommand;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class DriveToTargetCommand extends LoggingCommand {
-    private final DriveSubsystem driveSubsystem;
 
     private final double         targetX;
     private final double         targetY;
 
-    private final PIDController  xController = new PIDController(1.0, 0, 0);
-    private final PIDController  yController = new PIDController(1.0, 0, 0);
+    private final PIDController  xController = new PIDController(0.01, 0, 0);
+    private final PIDController  yController = new PIDController(0.01, 0, 0);
 
+    private final DriveSubsystem driveSubsystem;
 
     public DriveToTargetCommand(double targetX, double targetY, DriveSubsystem driveSubsystem) {
         this.targetX        = targetX;
         this.targetY        = targetY;
         this.driveSubsystem = driveSubsystem;
 
-        Pose2d currentPose  = driveSubsystem.getPose();
-        // first rotate to this angle
-        double angleInitial = Math.toDegrees(Math.atan2(targetY - currentPose.getY(), targetX - currentPose.getX()));
-        // then travel in a straight line
-
         addRequirements(driveSubsystem);
+
+        // set tolerances of x and y
+        xController.setTolerance(1);
+        yController.setTolerance(1);
     }
 
     @Override
     public void execute() {
-        Pose2d currentPose = driveSubsystem.getPose();
+        Pose2d currPose = driveSubsystem.getPose();
 
-        double xError      = targetX - currentPose.getX();
-        double yError      = targetY - currentPose.getY();
+        // calculate the change in pos (vel)
+        double xvel     = xController.calculate(currPose.getX(), targetX);
+        double yvel     = yController.calculate(currPose.getY(), targetY);
 
-        double xvel        = xController.calculate(xError);
-        double yvel        = yController.calculate(yError);
-        System.out.println(currentPose.getX() + " " + currentPose.getY() + " ");
-        setArcadeDriveMotorSpeeds(Math.sqrt(xvel * xvel + yvel * yvel), 0, DriveConstants.DRIVE_SCALING_NORMAL);
+        // calculate the magnitude of vel
+        double speed    = Math.sqrt(xvel * xvel + yvel * yvel);
+        System.out.println(currPose.getX() + " " + currPose.getY());
+
+        setArcadeDriveMotorSpeeds(speed, 0, DriveConstants.DRIVE_SCALING_NORMAL);
     }
 
     /**
@@ -70,10 +71,7 @@ public class DriveToTargetCommand extends LoggingCommand {
 
     @Override
     public boolean isFinished() {
-        // TODO: Make into constants
-        // finish if robot is close enought to threshold target
-        return Math.abs(targetX - driveSubsystem.getPose().getX()) < 0.1 &&
-            Math.abs(targetY - driveSubsystem.getPose().getY()) < 0.1; // &&
-        // Math.abs(target.getRotation().getDegrees() - driveSubsystem.getPose().getRotation().getDegrees()) < 5;
+        // when the robot is close enough to target with tolerance
+        return xController.atSetpoint() && yController.atSetpoint();
     }
 }

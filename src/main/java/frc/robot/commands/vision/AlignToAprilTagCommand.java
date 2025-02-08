@@ -35,7 +35,6 @@ public class AlignToAprilTagCommand extends LoggingCommand {
         this.visionSubsystem = visionSubsystem;
         this.driveSubsystem  = driveSubsystem;
 
-
         // Add required subsystems
         addRequirements(driveSubsystem);
     }
