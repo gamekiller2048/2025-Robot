@@ -69,7 +69,7 @@ public class AutoCommand extends SequentialCommandGroup {
             return;
 
         case PATH_TESTING:
-            double targets[][] = { { 100, -50 }, { 0, 0 }, { 100, -100 } };
+            double targets[][] = { { 8.306171, 4.058952 } };
 
 
             // addCommands(new DriveOnHeadingCommand(Math.toDegrees(Math.atan2(50, 100)), 0, 0, driveSubsystem));

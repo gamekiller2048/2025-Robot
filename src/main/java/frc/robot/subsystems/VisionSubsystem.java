@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 public class VisionSubsystem extends SubsystemBase {
 
     private final NetworkTable limelightTable;
-    private double             tv, ty, tx, ta, tid;
+    private double             tv, ty, tx, ta, tid, ambiguity;
 
     public VisionSubsystem() {
         limelightTable = NetworkTableInstance.getDefault().getTable("limelight");
@@ -33,6 +33,10 @@ public class VisionSubsystem extends SubsystemBase {
         return tid;
     }
 
+    public double getAmbiguity() {
+        return ambiguity;
+    }
+
     /** Safely stop the subsystem from moving */
     public void stop() {
     }
@@ -40,10 +44,11 @@ public class VisionSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         // This method will be called once per scheduler run
-        tv = limelightTable.getEntry("tv").getDouble(0);
-        tx = limelightTable.getEntry("tx").getDouble(0);
-        ty = limelightTable.getEntry("ty").getDouble(0);
-        ta = limelightTable.getEntry("ta").getDouble(0);
+        tv        = limelightTable.getEntry("tv").getDouble(0);
+        tx        = limelightTable.getEntry("tx").getDouble(0);
+        ty        = limelightTable.getEntry("ty").getDouble(0);
+        ta        = limelightTable.getEntry("ta").getDouble(0);
+        ambiguity = limelightTable.getEntry("rawFiducials").getDoubleArray(new double[7])[6];
     }
 
     @Override

@@ -11,8 +11,8 @@ public class DriveToTargetCommand extends LoggingCommand {
     private final double         targetX;
     private final double         targetY;
 
-    private final PIDController  xController = new PIDController(0.01, 0, 0);
-    private final PIDController  yController = new PIDController(0.01, 0, 0);
+    private final PIDController  xController = new PIDController(0.1, 0, 0);
+    private final PIDController  yController = new PIDController(0.1, 0, 0);
 
     private final DriveSubsystem driveSubsystem;
 
@@ -32,11 +32,11 @@ public class DriveToTargetCommand extends LoggingCommand {
     public void execute() {
         Pose2d currPose = driveSubsystem.getPose();
 
-        // calculate the change in pos (vel)
+        // calculate the change in pos (velocity)
         double xvel     = xController.calculate(currPose.getX(), targetX);
         double yvel     = yController.calculate(currPose.getY(), targetY);
 
-        // calculate the magnitude of vel
+        // calculate the magnitude of velocity
         double speed    = Math.sqrt(xvel * xvel + yvel * yvel);
         System.out.println(currPose.getX() + " " + currPose.getY());
 

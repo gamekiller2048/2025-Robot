@@ -166,8 +166,9 @@ public class DriveSubsystem extends SubsystemBase {
         else {
             navXGyro = new NavXGyro();
 
-            odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(navXGyro.getAngle()), getLeftEncoderDistanceCm(),
-                getRightEncoderDistanceCm());
+            odometry = new DifferentialDriveOdometry(Rotation2d.fromDegrees(navXGyro.getAngle()),
+                getLeftEncoderDistanceCm() / 100.0,
+                getRightEncoderDistanceCm() / 100.0);
 
         }
     }
@@ -310,6 +311,10 @@ public class DriveSubsystem extends SubsystemBase {
         return odometry.getPoseMeters();
     }
 
+    public void setPose(Pose2d pose) {
+        odometry.resetPose(pose);
+    }
+
     /**
      * Gets the average distance of the two encoders.
      *
@@ -423,13 +428,10 @@ public class DriveSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Gyro Heading", getHeading());
         SmartDashboard.putNumber("Gyro Pitch", getPitch());
 
-        // update the pose both real and sim
-        if (Robot.isSimulation()) {
-            odometry.update(Rotation2d.fromDegrees(simAngle), simLeftEncoder, simRightEncoder);
-        }
-        else {
-            odometry.update(Rotation2d.fromDegrees(navXGyro.getAngle()), getLeftEncoderDistanceCm(),
-                getRightEncoderDistanceCm());
+        // update the pose using real readings if not simulation
+        if (!Robot.isSimulation()) {
+            odometry.update(Rotation2d.fromDegrees(navXGyro.getAngle()), getLeftEncoderDistanceCm() / 100.0,
+                getRightEncoderDistanceCm() / 100.0);
         }
 
         Pose2d pose = getPose();
@@ -471,6 +473,9 @@ public class DriveSubsystem extends SubsystemBase {
         // Update the encoders with the simulation offsets.
         simLeftEncoder  = drivetrainSim.getLeftPositionMeters() * 100 / DriveConstants.CM_PER_ENCODER_COUNT;
         simRightEncoder = drivetrainSim.getRightPositionMeters() * 100 / DriveConstants.CM_PER_ENCODER_COUNT;
+
+        // update odometry with simulation readings
+        odometry.update(Rotation2d.fromDegrees(simAngle), simLeftEncoder / 100.0, simRightEncoder / 100.0);
     }
 
     @Override

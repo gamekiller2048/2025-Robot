@@ -32,7 +32,9 @@ public class RotateToTargetCommand extends LoggingCommand {
     @Override
     public void initialize() {
         Pose2d currPose = driveSubsystem.getPose();
-        angleToTarget = Math.toDegrees(Math.atan2(targetY - currPose.getY(), targetX - currPose.getX()));
+        angleToTarget = -Math.toDegrees(Math.atan2(targetY - currPose.getY(), targetX - currPose.getX()));
+        System.out.println("Angle " + angleToTarget);
+        System.out.println("My Current Angle " + driveSubsystem.getHeading());
     }
 
     @Override
